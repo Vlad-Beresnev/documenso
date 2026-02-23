@@ -22,15 +22,22 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "6.15.0",
+    "@typescript-eslint/parser": "6.15.0",
+    "eslint": "10.0.1",
+    "eslint-config-next": "12.0.4",
+    "eslint-plugin-react": "7.22.0",
+    "hono": "4.12.2",
     "kysely": "0.28.8",
     "nanoid": "^5.1.6",
+    "next": "15.5.12",
     "prisma": "^6.19.0",
     "prisma-extension-kysely": "^3.0.0",
-    "prisma-kysely": "^2.3.0",
     "prisma-json-types-generator": "^3.6.2",
+    "prisma-kysely": "^1.4.2",
     "ts-pattern": "^5.9.0",
     "zod": "^3.25.76",
-    "zod-prisma-types": "3.3.5"
+    "zod-prisma-types": "3.3.11"
   },
   "devDependencies": {
     "dotenv": "^17.2.3",

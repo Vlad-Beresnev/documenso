@@ -66,7 +66,6 @@ export default defineConfig({
     external: [
       '@napi-rs/canvas',
       '@node-rs/bcrypt',
-      '@prisma/client',
       '@documenso/tailwind-config',
       'playwright',
       'playwright-core',
@@ -75,6 +74,9 @@ export default defineConfig({
       '@google-cloud/kms',
       '@google-cloud/secret-manager',
     ],
+    optimizeDeps: {
+      include: ['@prisma/client'],
+    },
   },
   optimizeDeps: {
     entries: ['./app/**/*', '../../packages/ui/**/*', '../../packages/lib/**/*'],
