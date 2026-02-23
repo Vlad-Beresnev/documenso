@@ -188,74 +188,50 @@ export const DocumentSigningPageViewV1 = ({
           <div className="max-w-[50ch]">
             <span className="text-muted-foreground">
               {match(recipient.role)
-                .with(RecipientRole.VIEWER, () =>
-                  includeSenderDetails ? (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      on behalf of "{document.team?.name}" has invited you to view this document
-                    </Trans>
-                  ) : (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      has invited you to view this document
-                    </Trans>
-                  ),
-                )
-                .with(RecipientRole.SIGNER, () =>
-                  includeSenderDetails ? (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      on behalf of "{document.team?.name}" has invited you to sign this document
-                    </Trans>
-                  ) : (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      has invited you to sign this document
-                    </Trans>
-                  ),
-                )
-                .with(RecipientRole.APPROVER, () =>
-                  includeSenderDetails ? (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      on behalf of "{document.team?.name}" has invited you to approve this document
-                    </Trans>
-                  ) : (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      has invited you to approve this document
-                    </Trans>
-                  ),
-                )
-                .with(RecipientRole.ASSISTANT, () =>
-                  includeSenderDetails ? (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      on behalf of "{document.team?.name}" has invited you to assist this document
-                    </Trans>
-                  ) : (
-                    <Trans>
-                      <span className="truncate" title={senderName}>
-                        {senderName} {senderEmail}
-                      </span>{' '}
-                      has invited you to assist this document
-                    </Trans>
-                  ),
-                )
+                .with(RecipientRole.VIEWER, () => (
+                  <Trans>
+                    <span className="truncate" title={senderName}>
+                      {senderName}
+                    </span>
+                    {includeSenderDetails && document.team?.name ? (
+                      <> from {document.team.name}</>
+                    ) : null}{' '}
+                    has invited you to view this document
+                  </Trans>
+                ))
+                .with(RecipientRole.SIGNER, () => (
+                  <Trans>
+                    <span className="truncate" title={senderName}>
+                      {senderName}
+                    </span>
+                    {includeSenderDetails && document.team?.name ? (
+                      <> from {document.team.name}</>
+                    ) : null}{' '}
+                    has invited you to sign this document
+                  </Trans>
+                ))
+                .with(RecipientRole.APPROVER, () => (
+                  <Trans>
+                    <span className="truncate" title={senderName}>
+                      {senderName}
+                    </span>
+                    {includeSenderDetails && document.team?.name ? (
+                      <> from {document.team.name}</>
+                    ) : null}{' '}
+                    has invited you to approve this document
+                  </Trans>
+                ))
+                .with(RecipientRole.ASSISTANT, () => (
+                  <Trans>
+                    <span className="truncate" title={senderName}>
+                      {senderName}
+                    </span>
+                    {includeSenderDetails && document.team?.name ? (
+                      <> from {document.team.name}</>
+                    ) : null}{' '}
+                    has invited you to assist this document
+                  </Trans>
+                ))
                 .otherwise(() => null)}
             </span>
           </div>

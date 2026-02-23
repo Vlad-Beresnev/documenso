@@ -21,6 +21,7 @@ export type DocumentInviteEmailTemplateProps = Partial<TemplateDocumentInvitePro
   teamEmail?: string;
   includeSenderDetails?: boolean;
   organisationType?: OrganisationType;
+  expiresAt?: Date;
 };
 
 export const DocumentInviteEmailTemplate = ({
@@ -35,6 +36,7 @@ export const DocumentInviteEmailTemplate = ({
   teamName = '',
   includeSenderDetails,
   organisationType,
+  expiresAt,
 }: DocumentInviteEmailTemplateProps) => {
   const { _ } = useLingui();
   const branding = useBranding();
@@ -44,9 +46,7 @@ export const DocumentInviteEmailTemplate = ({
   let previewText = msg`${inviterName} has invited you to ${action} ${documentName}`;
 
   if (organisationType === OrganisationType.ORGANISATION) {
-    previewText = includeSenderDetails
-      ? msg`${inviterName} on behalf of "${teamName}" has invited you to ${action} ${documentName}`
-      : msg`${teamName} has invited you to ${action} ${documentName}`;
+    previewText = msg`${teamName} has invited you to ${action} ${documentName}`;
   }
 
   if (selfSigner) {
@@ -67,11 +67,11 @@ export const DocumentInviteEmailTemplate = ({
           <Container className="mx-auto mb-2 mt-8 max-w-xl rounded-lg border border-solid border-slate-200 p-4 backdrop-blur-sm">
             <Section>
               {branding.brandingEnabled && branding.brandingLogo ? (
-                <Img src={branding.brandingLogo} alt="Branding Logo" className="mb-4 h-6" />
+                <Img src={branding.brandingLogo} alt="Branding Logo" className="mb-4 h-16" />
               ) : (
                 <Img
                   src={getAssetUrl('/static/logo.png')}
-                  alt="Documenso Logo"
+                  alt="GlobalLegalCheck"
                   className="mb-4 h-6"
                 />
               )}
@@ -91,34 +91,65 @@ export const DocumentInviteEmailTemplate = ({
             </Section>
           </Container>
 
-          <Container className="mx-auto mt-12 max-w-xl">
+          <Container className="mx-auto mt-8 max-w-xl">
             <Section>
-              {organisationType === OrganisationType.PERSONAL && (
-                <Text className="my-4 text-base font-semibold">
-                  <Trans>
-                    {inviterName}{' '}
-                    <Link className="font-normal text-slate-400" href="mailto:{inviterEmail}">
-                      ({inviterEmail})
-                    </Link>
-                  </Trans>
-                </Text>
-              )}
-
-              <Text className="mt-2 text-base text-slate-400">
-                {customBody ? (
+              {customBody ? (
+                <Text className="mt-2 text-base text-slate-400">
                   <TemplateCustomMessageBody text={customBody} />
-                ) : (
-                  <Trans>
-                    {inviterName} has invited you to {action} the document "{documentName}".
-                  </Trans>
-                )}
-              </Text>
+                </Text>
+              ) : (
+                <>
+                  <Text className="m-0 text-sm text-slate-600">
+                    <Trans>
+                      <strong>Sent by:</strong> {inviterName}
+                    </Trans>
+                  </Text>
+
+                  {organisationType === OrganisationType.ORGANISATION && teamName && (
+                    <Text className="m-0 text-sm text-slate-600">
+                      <Trans>
+                        <strong>Organization:</strong> {teamName}
+                      </Trans>
+                    </Text>
+                  )}
+
+                  <Text className="m-0 text-sm text-slate-600">
+                    <Trans>
+                      <strong>Email:</strong>{' '}
+                      <Link className="text-slate-600" href={`mailto:${inviterEmail}`}>
+                        {inviterEmail}
+                      </Link>
+                    </Trans>
+                  </Text>
+
+                  {expiresAt && (
+                    <Text className="mb-0 mt-4 text-sm font-medium text-slate-600">
+                      <Trans>
+                        This signing request expires on{' '}
+                        {new Intl.DateTimeFormat('en-GB', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        }).format(expiresAt)}
+                        .
+                      </Trans>
+                    </Text>
+                  )}
+
+                  <Text className="mb-0 mt-4 text-sm text-slate-400">
+                    <Trans>
+                      If you were not expecting this document, please contact the sender before
+                      proceeding.
+                    </Trans>
+                  </Text>
+                </>
+              )}
             </Section>
           </Container>
 
           <Hr className="mx-auto mt-12 max-w-xl" />
 
-          <Container className="mx-auto max-w-xl">
+          <Container className="mx-auto max-w-xl text-center">
             <TemplateFooter />
           </Container>
         </Section>

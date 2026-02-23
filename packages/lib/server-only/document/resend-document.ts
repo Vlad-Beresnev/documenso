@@ -175,11 +175,7 @@ export const resendDocument = async ({
         emailSubject = i18n._(
           msg`Reminder: ${envelope.team.name} invited you to ${recipientActionVerb} a document`,
         );
-        emailMessage =
-          envelope.documentMeta.message ||
-          i18n._(
-            msg`${user.name || user.email} on behalf of "${envelope.team.name}" has invited you to ${recipientActionVerb} the document "${envelope.title}".`,
-          );
+        emailMessage = envelope.documentMeta.message || '';
       }
 
       const customEmailTemplate = {

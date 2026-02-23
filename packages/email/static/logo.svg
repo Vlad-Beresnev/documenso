@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Color Definition -->
+  <defs>
+    <style>
+      .logo-blue { fill: #007bff; stroke: none; }
+      .globe-lines { fill: none; stroke: #007bff; stroke-width: 3; }
+    </style>
+  </defs>
+
+  <!-- Globe Section -->
+  <!-- Outer Circle -->
+  <circle cx="50" cy="42" r="20" class="globe-lines" stroke-width="3" />
+
+  <!-- Meridians (Vertical Lines) -->
+  <!-- Center Vertical -->
+  <line x1="50" y1="22" x2="50" y2="62" class="globe-lines" />
+  <!-- Side Curves -->
+  <ellipse cx="50" cy="42" rx="10" ry="20" class="globe-lines" />
+
+  <!-- Parallels (Horizontal Lines) -->
+  <!-- Equator -->
+  <line x1="30" y1="42" x2="70" y2="42" class="globe-lines" />
+  <!-- Upper Parallel (Curved downwards slightly for perspective) -->
+  <path d="M32 32 Q 50 36 68 32" class="globe-lines" />
+  <!-- Lower Parallel (Curved upwards slightly for perspective) -->
+  <path d="M32 52 Q 50 48 68 52" class="globe-lines" />
+
+  <!-- Laurel Wreath Section -->
+  <!-- Left Branch -->
+  <path d="M 50 90
+           Q 35 88 28 65
+           Q 26 55 26 40
+           L 24 25
+           L 18 30
+           Q 22 35 22 45
+           L 15 48
+           Q 18 55 20 62
+           L 12 68
+           Q 18 75 25 78
+           L 20 85
+           Q 30 85 45 92
+           Z"
+        class="logo-blue" />
+
+  <!-- Right Branch (Mirrored) -->
+  <path d="M 50 90
+           Q 65 88 72 65
+           Q 74 55 74 40
+           L 76 25
+           L 82 30
+           Q 78 35 78 45
+           L 85 48
+           Q 82 55 80 62
+           L 88 68
+           Q 82 75 75 78
+           L 80 85
+           Q 70 85 55 92
+           Z"
+        class="logo-blue" />
+</svg>
