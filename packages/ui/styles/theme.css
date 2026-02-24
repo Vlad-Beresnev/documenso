@@ -29,8 +29,8 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
 
-    --primary: 95.08 71.08% 67.45%;
-    --primary-foreground: 95.08 71.08% 10%;
+    --primary: 212 100% 49%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -41,7 +41,7 @@
     --destructive: 0 100% 50%;
     --destructive-foreground: 210 40% 98%;
 
-    --ring: 95.08 71.08% 67.45%;
+    --ring: 212 100% 49%;
 
     --radius: 0.5rem;
 
@@ -164,8 +164,8 @@
 
     --field-border: 214.3 31.8% 91.4%;
 
-    --primary: 95.08 71.08% 67.45%;
-    --primary-foreground: 95.08 71.08% 10%;
+    --primary: 212 100% 49%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 23.4%;
     --secondary-foreground: 95.08 71.08% 67.45%;
@@ -176,7 +176,7 @@
     --destructive: 0 87% 62%;
     --destructive-foreground: 0 87% 19%;
 
-    --ring: 95.08 71.08% 67.45%;
+    --ring: 212 100% 49%;
 
     --radius: 0.5rem;
 

@@ -1,7 +1,7 @@
 import { colord } from 'colord';
 import { once } from 'remeda';
 
-export type TRecipientColor = 'readOnly' | (typeof AVAILABLE_RECIPIENT_COLORS)[number];
+export const DEFAULT_RECT_BACKGROUND = 'rgba(255, 255, 255, 0.95)';
 
 export type RecipientColorStyles = {
   base: string;
@@ -16,32 +16,32 @@ export type RecipientColorStyles = {
   comboBoxItem: string;
 };
 
-export const DEFAULT_RECT_BACKGROUND = 'rgba(255, 255, 255, 0.95)';
-
-// !: values of the declared variable to do all the background, border and shadow styles.
-const RECIPIENT_COLOR_STYLES: Record<TRecipientColor, () => RecipientColorStyles> = {
-  readOnly: (): RecipientColorStyles => ({
-    base: 'ring-neutral-400',
-    baseRing: 'rgba(176, 176, 176, 1)',
-    baseRingHover: 'rgba(176, 176, 176, 1)',
-    baseTextHover: 'rgba(176, 176, 176, 1)',
-    fieldButton: 'border-neutral-400 hover:border-neutral-400',
-    fieldButtonText: '',
-    fieldItem: 'group/field-item rounded-[2px]',
-    fieldItemInitials: '',
-    comboBoxTrigger:
-      'ring-2 ring-recipient-green shadow-[0_0_0_5px_hsl(var(--recipient-green)/10%),0_0_0_2px_hsl(var(--recipient-green)/60%),0_0_0_0.5px_hsl(var(--recipient-green))]',
-    comboBoxItem: '',
-  }),
-  green: once(() => generateStyles('green')),
-  blue: once(() => generateStyles('blue')),
-  purple: once(() => generateStyles('purple')),
-  orange: once(() => generateStyles('orange')),
-  yellow: once(() => generateStyles('yellow')),
-  pink: once(() => generateStyles('pink')),
+const CSS_PROPERTY = {
+  bg: 'bg',
+  border: 'border',
+  ring: 'ring',
+  text: 'text',
 };
 
-const generateStyles = (recipientColor: TRecipientColor): RecipientColorStyles => {
+const CSS_VARIANT = {
+  active: 'active',
+  groupHover: 'group-hover',
+  groupHoverFieldItem: 'group-hover/field-item',
+  hover: 'hover',
+};
+
+export const AVAILABLE_RECIPIENT_COLORS = ['green', 'blue', 'purple', 'orange', 'yellow', 'pink'] as const;
+
+export type TRecipientColor = 'readOnly' | (typeof AVAILABLE_RECIPIENT_COLORS)[number];
+
+export const RECIPIENT_DYNAMIC_CLASS = {
+  pattern: new RegExp(
+    `(${Object.values(CSS_PROPERTY).join('|')})-recipient-(${AVAILABLE_RECIPIENT_COLORS.join('|')})(\\/(15|30))?$`,
+  ),
+  variants: Object.values(CSS_VARIANT),
+};
+
+const generateStyles = (recipientColor: (typeof AVAILABLE_RECIPIENT_COLORS)[number]): RecipientColorStyles => {
   const { bg, border, ring, text } = CSS_PROPERTY;
   const { active, hover, groupHover, groupHoverFieldItem } = CSS_VARIANT;
 
@@ -63,35 +63,38 @@ const generateStyles = (recipientColor: TRecipientColor): RecipientColorStyles =
   };
 };
 
-const CSS_PROPERTY = {
-  bg: 'bg',
-  border: 'border',
-  ring: 'ring',
-  text: 'text',
-};
+const RECIPIENT_COLOR_STYLES = Object.fromEntries(
+  AVAILABLE_RECIPIENT_COLORS.map((color) => [color, once(() => generateStyles(color))]),
+) as Record<(typeof AVAILABLE_RECIPIENT_COLORS)[number], () => RecipientColorStyles>;
 
-const CSS_VARIANT = {
-  active: 'active',
-  groupHover: 'group-hover',
-  groupHoverFieldItem: 'group-hover/field-item',
-  hover: 'hover',
-};
-
-const AVAILABLE_RECIPIENT_COLORS = ['green', 'blue', 'purple', 'orange', 'yellow', 'pink'] as const;
-
-export const RECIPIENT_DYNAMIC_CLASS = {
-  pattern: new RegExp(
-    `(${Object.values(CSS_PROPERTY).join('|')})-recipient-(${AVAILABLE_RECIPIENT_COLORS.join('|')})(\\/(15|30))?$`,
-  ),
-  variants: Object.values(CSS_VARIANT),
+const READ_ONLY_STYLES: RecipientColorStyles = {
+  base: 'ring-neutral-400',
+  baseRing: 'rgba(176, 176, 176, 1)',
+  baseRingHover: 'rgba(176, 176, 176, 1)',
+  baseTextHover: 'rgba(176, 176, 176, 1)',
+  fieldButton: 'border-neutral-400 hover:border-neutral-400',
+  fieldButtonText: '',
+  fieldItem: 'group/field-item rounded-[2px]',
+  fieldItemInitials: '',
+  comboBoxTrigger:
+    'ring-2 ring-neutral-400 shadow-[0_0_0_5px_hsl(var(--neutral-400)/10%),0_0_0_2px_hsl(var(--neutral-400)/60%),0_0_0_0.5px_hsl(var(--neutral-400))]',
+  comboBoxItem: '',
 };
 
 export const getRecipientColor = (index: number) => {
   return AVAILABLE_RECIPIENT_COLORS[Math.max(index, 0) % AVAILABLE_RECIPIENT_COLORS.length];
 };
 
-export const getRecipientColorStyles = (colorOrIndex: TRecipientColor | number) => {
+export const getRecipientColorStyles = (colorOrIndex: TRecipientColor | number): RecipientColorStyles => {
   const color = typeof colorOrIndex === 'number' ? getRecipientColor(colorOrIndex) : colorOrIndex;
 
+  if (color === 'readOnly') {
+    return READ_ONLY_STYLES;
+  }
+
   return RECIPIENT_COLOR_STYLES[color]();
+};
+
+export const useRecipientColors = (index: number) => {
+  return getRecipientColorStyles(index);
 };

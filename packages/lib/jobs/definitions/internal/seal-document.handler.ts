@@ -13,6 +13,7 @@ import path from 'node:path';
 import { groupBy } from 'remeda';
 
 import { addRejectionStampToPdf } from '@documenso/lib/server-only/pdf/add-rejection-stamp-to-pdf';
+import { addSignedHeaderFooter } from '@documenso/lib/server-only/pdf/add-signed-header-footer';
 import { generateAuditLogPdf } from '@documenso/lib/server-only/pdf/generate-audit-log-pdf';
 import { generateCertificatePdf } from '@documenso/lib/server-only/pdf/generate-certificate-pdf';
 import { getLastPageDimensions } from '@documenso/lib/server-only/pdf/get-page-size';
@@ -389,6 +390,9 @@ const decorateAndSignPdf = async ({
     await addRejectionStampToPdf(pdfDoc, rejectionReason);
   }
 
+  // Capture original page count before certificate/audit-log pages are appended.
+  const originalPageCount = pdfDoc.getPageCount();
+
   if (certificateDoc) {
     await pdfDoc.copyPagesFrom(
       certificateDoc,
@@ -477,6 +481,22 @@ const decorateAndSignPdf = async ({
       });
     }
   }
+
+  // Find the first signature field's ID to show in the header.
+  const { FieldType: PrismaFieldType } = await import('@prisma/client');
+  const firstSigField = envelopeItemFields.find(
+    (f) => f.type === PrismaFieldType.SIGNATURE || f.type === PrismaFieldType.FREE_SIGNATURE,
+  );
+
+  // Stamp GLC-branded header and footer onto every original document page.
+  await addSignedHeaderFooter({
+    pdf: pdfDoc,
+    originalPageCount,
+    documentTitle: envelope.title,
+    documentId: envelope.id,
+    signedAt: new Date(),
+    signatureId: firstSigField?.secondaryId ?? undefined,
+  });
 
   // Re-flatten the form to handle our checkbox and radio fields that
   // create native arcoFields

@@ -7,9 +7,7 @@ import { redirect } from 'react-router';
 import { prop, sortBy } from 'remeda';
 import { match } from 'ts-pattern';
 import { UAParser } from 'ua-parser-js';
-import { renderSVG } from 'uqr';
 
-import { NEXT_PUBLIC_WEBAPP_URL } from '@documenso/lib/constants/app';
 import { APP_I18N_OPTIONS, ZSupportedLanguageCodeSchema } from '@documenso/lib/constants/i18n';
 import {
   RECIPIENT_ROLES_DESCRIPTION,
@@ -32,8 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from '@documenso/ui/primitives/table';
-
-import { BrandingLogo } from '~/components/general/branding-logo';
 
 import type { Route } from './+types/certificate';
 
@@ -113,7 +109,7 @@ export async function loader({ request }: Route.LoaderArgs) {
  * Update: Maybe <Trans> tags work now after RR7 migration.
  */
 export default function SigningCertificate({ loaderData }: Route.ComponentProps) {
-  const { document, documentLanguage, hidePoweredBy, auditLogs, messages } = loaderData;
+  const { document, documentLanguage, auditLogs, messages } = loaderData;
 
   const { i18n, _ } = useLingui();
 
@@ -222,192 +218,190 @@ export default function SigningCertificate({ loaderData }: Route.ComponentProps)
   };
 
   return (
-    <div className="print-provider pointer-events-none mx-auto max-w-screen-md">
-      <div className="flex items-center">
-        <h1 className="my-8 text-2xl font-bold">{_(msg`Signing Certificate`)}</h1>
-      </div>
+    <div className="print-provider pointer-events-none min-h-screen bg-[#f1f5f9] px-6 py-8">
+      <div className="mx-auto max-w-screen-md">
+        <div className="mb-6 flex items-center gap-x-3">
+          <div className="h-8 w-1 rounded-full bg-[#007CFA]" />
+          <h1 className="text-2xl font-bold text-[#1a2b4a]">{_(msg`Signing Certificate`)}</h1>
+        </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table overflowHidden>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{_(msg`Signer Events`)}</TableHead>
-                <TableHead>{_(msg`Signature`)}</TableHead>
-                <TableHead>{_(msg`Details`)}</TableHead>
-                {/* <TableHead>Security</TableHead> */}
-              </TableRow>
-            </TableHeader>
+        <Card className="overflow-hidden rounded-xl border-0 shadow-sm">
+          <CardContent className="p-0">
+            <Table overflowHidden>
+              <TableHeader>
+                <TableRow className="bg-[#f8faff]">
+                  <TableHead className="font-semibold text-[#007CFA]">
+                    {_(msg`Signer Events`)}
+                  </TableHead>
+                  <TableHead className="font-semibold text-[#007CFA]">
+                    {_(msg`Signature`)}
+                  </TableHead>
+                  <TableHead className="font-semibold text-[#007CFA]">{_(msg`Details`)}</TableHead>
+                </TableRow>
+              </TableHeader>
 
-            <TableBody className="print:text-xs">
-              {document.recipients.map((recipient, i) => {
-                const logs = getRecipientAuditLogs(recipient.id);
-                const signature = getRecipientSignatureField(recipient.id);
+              <TableBody className="print:text-xs">
+                {document.recipients.map((recipient, i) => {
+                  const logs = getRecipientAuditLogs(recipient.id);
+                  const signature = getRecipientSignatureField(recipient.id);
 
-                return (
-                  <TableRow key={i} className="print:break-inside-avoid">
-                    <TableCell truncate={false} className="w-[min-content] max-w-[220px] align-top">
-                      <div className="hyphens-auto break-words font-medium">{recipient.name}</div>
-                      <div className="break-all">{recipient.email}</div>
-                      <p className="mt-2 text-sm text-muted-foreground print:text-xs">
-                        {_(RECIPIENT_ROLES_DESCRIPTION[recipient.role].roleName)}
-                      </p>
-
-                      <p className="mt-2 text-sm text-muted-foreground print:text-xs">
-                        <span className="font-medium">{_(msg`Authentication Level`)}:</span>{' '}
-                        <span className="block">{getAuthenticationLevel(recipient.id)}</span>
-                      </p>
-                    </TableCell>
-
-                    <TableCell truncate={false} className="w-[min-content] align-top">
-                      {signature ? (
-                        <>
-                          <div
-                            className="inline-block rounded-lg p-1"
-                            style={{
-                              boxShadow: `0px 0px 0px 4.88px rgba(122, 196, 85, 0.1), 0px 0px 0px 1.22px rgba(122, 196, 85, 0.6), 0px 0px 0px 0.61px rgba(122, 196, 85, 1)`,
-                            }}
-                          >
-                            {signature.signature?.signatureImageAsBase64 && (
-                              <img
-                                src={`${signature.signature?.signatureImageAsBase64}`}
-                                alt="Signature"
-                                className="max-h-12 max-w-full"
-                              />
-                            )}
-
-                            {signature.signature?.typedSignature && (
-                              <p className="text-center font-signature text-sm">
-                                {signature.signature?.typedSignature}
-                              </p>
-                            )}
-                          </div>
-
-                          <p className="mt-2 text-sm text-muted-foreground print:text-xs">
-                            <span className="font-medium">{_(msg`Signature ID`)}:</span>{' '}
-                            <span className="block font-mono uppercase">
-                              {signature.secondaryId}
-                            </span>
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-muted-foreground">
-                          <Trans>N/A</Trans>
-                        </p>
-                      )}
-
-                      <p className="mt-2 text-sm text-muted-foreground print:text-xs">
-                        <span className="font-medium">{_(msg`IP Address`)}:</span>{' '}
-                        <span className="inline-block">
-                          {logs.DOCUMENT_RECIPIENT_COMPLETED[0]?.ipAddress ?? _(msg`Unknown`)}
-                        </span>
-                      </p>
-
-                      <p className="mt-1 text-sm text-muted-foreground print:text-xs">
-                        <span className="font-medium">{_(msg`Device`)}:</span>{' '}
-                        <span className="inline-block">
-                          {getDevice(logs.DOCUMENT_RECIPIENT_COMPLETED[0]?.userAgent)}
-                        </span>
-                      </p>
-                    </TableCell>
-
-                    <TableCell truncate={false} className="w-[min-content] align-top">
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground print:text-xs">
-                          <span className="font-medium">{_(msg`Sent`)}:</span>{' '}
-                          <span className="inline-block">
-                            {logs.EMAIL_SENT[0]
-                              ? DateTime.fromJSDate(logs.EMAIL_SENT[0].createdAt)
-                                  .setLocale(APP_I18N_OPTIONS.defaultLocale)
-                                  .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
-                              : logs.DOCUMENT_SENT[0]
-                                ? DateTime.fromJSDate(logs.DOCUMENT_SENT[0].createdAt)
-                                    .setLocale(APP_I18N_OPTIONS.defaultLocale)
-                                    .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
-                                : _(msg`Unknown`)}
-                          </span>
+                  return (
+                    <TableRow key={i} className="print:break-inside-avoid">
+                      <TableCell
+                        truncate={false}
+                        className="w-[min-content] max-w-[220px] align-top"
+                      >
+                        <div className="hyphens-auto break-words font-medium">{recipient.name}</div>
+                        <div className="break-all">{recipient.email}</div>
+                        <p className="mt-2 text-sm text-muted-foreground print:text-xs">
+                          {_(RECIPIENT_ROLES_DESCRIPTION[recipient.role].roleName)}
                         </p>
 
-                        <p className="text-sm text-muted-foreground print:text-xs">
-                          <span className="font-medium">{_(msg`Viewed`)}:</span>{' '}
-                          <span className="inline-block">
-                            {logs.DOCUMENT_OPENED[0]
-                              ? DateTime.fromJSDate(logs.DOCUMENT_OPENED[0].createdAt)
-                                  .setLocale(APP_I18N_OPTIONS.defaultLocale)
-                                  .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
-                              : _(msg`Unknown`)}
-                          </span>
+                        <p className="mt-2 text-sm text-muted-foreground print:text-xs">
+                          <span className="font-medium">{_(msg`Authentication Level`)}:</span>{' '}
+                          <span className="block">{getAuthenticationLevel(recipient.id)}</span>
                         </p>
+                      </TableCell>
 
-                        {logs.DOCUMENT_RECIPIENT_REJECTED[0] ? (
-                          <p className="text-sm text-muted-foreground print:text-xs">
-                            <span className="font-medium">{_(msg`Rejected`)}:</span>{' '}
-                            <span className="inline-block">
-                              {logs.DOCUMENT_RECIPIENT_REJECTED[0]
-                                ? DateTime.fromJSDate(logs.DOCUMENT_RECIPIENT_REJECTED[0].createdAt)
-                                    .setLocale(APP_I18N_OPTIONS.defaultLocale)
-                                    .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
-                                : _(msg`Unknown`)}
-                            </span>
-                          </p>
+                      <TableCell truncate={false} className="w-[min-content] align-top">
+                        {signature ? (
+                          <>
+                            <div
+                              className="inline-block rounded-lg p-1"
+                              style={{
+                                boxShadow: `0px 0px 0px 4.88px rgba(0, 124, 250, 0.1), 0px 0px 0px 1.22px rgba(0, 124, 250, 0.6), 0px 0px 0px 0.61px rgba(0, 124, 250, 1)`,
+                              }}
+                            >
+                              {signature.signature?.signatureImageAsBase64 && (
+                                <img
+                                  src={`${signature.signature?.signatureImageAsBase64}`}
+                                  alt="Signature"
+                                  className="max-h-12 max-w-full"
+                                />
+                              )}
+
+                              {signature.signature?.typedSignature && (
+                                <p className="text-center font-signature text-sm">
+                                  {signature.signature?.typedSignature}
+                                </p>
+                              )}
+                            </div>
+
+                            <p className="mt-2 text-sm text-muted-foreground print:text-xs">
+                              <span className="font-medium">{_(msg`Signature ID`)}:</span>{' '}
+                              <span className="block font-mono uppercase">
+                                {signature.secondaryId}
+                              </span>
+                            </p>
+                          </>
                         ) : (
-                          <p className="text-sm text-muted-foreground print:text-xs">
-                            <span className="font-medium">{_(msg`Signed`)}:</span>{' '}
-                            <span className="inline-block">
-                              {logs.DOCUMENT_RECIPIENT_COMPLETED[0]
-                                ? DateTime.fromJSDate(
-                                    logs.DOCUMENT_RECIPIENT_COMPLETED[0].createdAt,
-                                  )
-                                    .setLocale(APP_I18N_OPTIONS.defaultLocale)
-                                    .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
-                                : _(msg`Unknown`)}
-                            </span>
+                          <p className="text-muted-foreground">
+                            <Trans>N/A</Trans>
                           </p>
                         )}
 
-                        <p className="text-sm text-muted-foreground print:text-xs">
-                          <span className="font-medium">{_(msg`Reason`)}:</span>{' '}
+                        <p className="mt-2 text-sm text-muted-foreground print:text-xs">
+                          <span className="font-medium">{_(msg`IP Address`)}:</span>{' '}
                           <span className="inline-block">
-                            {recipient.signingStatus === SigningStatus.REJECTED
-                              ? recipient.rejectionReason
-                              : _(
-                                  isOwner(recipient.email)
-                                    ? FRIENDLY_SIGNING_REASONS['__OWNER__']
-                                    : FRIENDLY_SIGNING_REASONS[recipient.role],
-                                )}
+                            {logs.DOCUMENT_RECIPIENT_COMPLETED[0]?.ipAddress ?? _(msg`Unknown`)}
                           </span>
                         </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
 
-      {!hidePoweredBy && (
-        <div className="my-8 flex-row-reverse space-y-4">
-          <div className="flex items-end justify-end gap-x-4">
-            <div
-              className="flex h-24 w-24 justify-center"
-              dangerouslySetInnerHTML={{
-                __html: renderSVG(`${NEXT_PUBLIC_WEBAPP_URL()}/share/${document.qrToken}`, {
-                  ecc: 'Q',
-                }),
-              }}
-            />
-          </div>
+                        <p className="mt-1 text-sm text-muted-foreground print:text-xs">
+                          <span className="font-medium">{_(msg`Device`)}:</span>{' '}
+                          <span className="inline-block">
+                            {getDevice(logs.DOCUMENT_RECIPIENT_COMPLETED[0]?.userAgent)}
+                          </span>
+                        </p>
+                      </TableCell>
 
-          <div className="flex items-end justify-end gap-x-4">
-            <p className="flex-shrink-0 text-sm font-medium print:text-xs">
-              {_(msg`Signing certificate provided by`)}:
-            </p>
-            <BrandingLogo className="max-h-6 print:max-h-4" />
-          </div>
+                      <TableCell truncate={false} className="w-[min-content] align-top">
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground print:text-xs">
+                            <span className="font-medium">{_(msg`Sent`)}:</span>{' '}
+                            <span className="inline-block">
+                              {logs.EMAIL_SENT[0]
+                                ? DateTime.fromJSDate(logs.EMAIL_SENT[0].createdAt)
+                                    .setLocale(APP_I18N_OPTIONS.defaultLocale)
+                                    .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+                                : logs.DOCUMENT_SENT[0]
+                                  ? DateTime.fromJSDate(logs.DOCUMENT_SENT[0].createdAt)
+                                      .setLocale(APP_I18N_OPTIONS.defaultLocale)
+                                      .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+                                  : _(msg`Unknown`)}
+                            </span>
+                          </p>
+
+                          <p className="text-sm text-muted-foreground print:text-xs">
+                            <span className="font-medium">{_(msg`Viewed`)}:</span>{' '}
+                            <span className="inline-block">
+                              {logs.DOCUMENT_OPENED[0]
+                                ? DateTime.fromJSDate(logs.DOCUMENT_OPENED[0].createdAt)
+                                    .setLocale(APP_I18N_OPTIONS.defaultLocale)
+                                    .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+                                : _(msg`Unknown`)}
+                            </span>
+                          </p>
+
+                          {logs.DOCUMENT_RECIPIENT_REJECTED[0] ? (
+                            <p className="text-sm text-muted-foreground print:text-xs">
+                              <span className="font-medium">{_(msg`Rejected`)}:</span>{' '}
+                              <span className="inline-block">
+                                {logs.DOCUMENT_RECIPIENT_REJECTED[0]
+                                  ? DateTime.fromJSDate(
+                                      logs.DOCUMENT_RECIPIENT_REJECTED[0].createdAt,
+                                    )
+                                      .setLocale(APP_I18N_OPTIONS.defaultLocale)
+                                      .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+                                  : _(msg`Unknown`)}
+                              </span>
+                            </p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground print:text-xs">
+                              <span className="font-medium">{_(msg`Signed`)}:</span>{' '}
+                              <span className="inline-block">
+                                {logs.DOCUMENT_RECIPIENT_COMPLETED[0]
+                                  ? DateTime.fromJSDate(
+                                      logs.DOCUMENT_RECIPIENT_COMPLETED[0].createdAt,
+                                    )
+                                      .setLocale(APP_I18N_OPTIONS.defaultLocale)
+                                      .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+                                  : _(msg`Unknown`)}
+                              </span>
+                            </p>
+                          )}
+
+                          <p className="text-sm text-muted-foreground print:text-xs">
+                            <span className="font-medium">{_(msg`Reason`)}:</span>{' '}
+                            <span className="inline-block">
+                              {recipient.signingStatus === SigningStatus.REJECTED
+                                ? recipient.rejectionReason
+                                : _(
+                                    isOwner(recipient.email)
+                                      ? FRIENDLY_SIGNING_REASONS['__OWNER__']
+                                      : FRIENDLY_SIGNING_REASONS[recipient.role],
+                                  )}
+                            </span>
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <div className="mt-8 border-t border-[#e2e8f0] pt-6 text-center">
+          <p className="text-sm font-medium text-[#1a2b4a]">
+            {_(msg`Signing certificate provided by`)} GlobalLegalCheck
+          </p>
+          <p className="mt-1 text-xs text-[#64748b]">
+            © {new Date().getFullYear()} GlobalLegalCheck. All rights reserved.
+          </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -6,21 +6,17 @@ import type { RecipientRole } from '@prisma/client';
 import Konva from 'konva';
 import 'konva/skia-backend';
 import { DateTime } from 'luxon';
-import fs from 'node:fs';
 import path from 'node:path';
 import type { Canvas } from 'skia-canvas';
 import { Image as SkiaImage } from 'skia-canvas';
 import { UAParser } from 'ua-parser-js';
-import { renderSVG } from 'uqr';
 
-import { NEXT_PUBLIC_WEBAPP_URL } from '../../constants/app';
 import { APP_I18N_OPTIONS } from '../../constants/i18n';
 import {
   RECIPIENT_ROLES_DESCRIPTION,
   RECIPIENT_ROLE_SIGNING_REASONS,
 } from '../../constants/recipient-roles';
 import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-logs';
-import { svgToPng } from '../../utils/images/svg-to-png';
 import { ensureFontLibrary } from './helpers';
 
 type ColumnWidths = [number, number, number];
@@ -333,7 +329,7 @@ const renderColumnTwo = (options: RenderColumnOptions) => {
       y: 2,
       width: maxSignatureWidth,
       height: signatureHeight,
-      stroke: 'rgba(122, 196, 85, 0.6)',
+      stroke: 'rgba(0, 124, 250, 0.6)',
       strokeWidth: 1,
       cornerRadius: 8,
     });
@@ -344,7 +340,7 @@ const renderColumnTwo = (options: RenderColumnOptions) => {
       y: 0,
       width: maxSignatureWidth + 4,
       height: signatureHeight + 4,
-      stroke: 'rgba(122, 196, 85, 0.1)',
+      stroke: 'rgba(0, 124, 250, 0.1)',
       strokeWidth: 4,
       cornerRadius: 8,
     });
@@ -565,63 +561,24 @@ const renderRow = (options: RenderRowOptions) => {
   return rowGroup;
 };
 
-const renderBranding = async ({ qrToken, i18n }: { qrToken: string | null; i18n: I18n }) => {
+const renderBranding = ({ i18n }: { qrToken: string | null; i18n: I18n }) => {
   const branding = new Konva.Group();
 
   const brandingHeight = 12;
 
-  const text = new Konva.Text({
+  const label = new Konva.Text({
     x: 0,
     verticalAlign: 'middle',
-    text: i18n._(msg`Signing certificate provided by`) + ':',
+    text: i18n._(msg`Signing certificate provided by`) + ': Global Legal Check',
     fontStyle: fontMedium,
     fontFamily: 'Inter',
     fontSize: textSm,
     height: brandingHeight,
   });
 
-  const logoPath = path.join(process.cwd(), 'public/static/logo.png');
-  const logo = fs.readFileSync(logoPath);
-
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const img = new SkiaImage(logo) as unknown as HTMLImageElement;
-
-  const documensoImage = new Konva.Image({
-    image: img,
-    height: brandingHeight,
-    width: brandingHeight * (img.width / img.height),
-    x: text.width() + 16,
-  });
-
-  const qrSize = qrToken ? 72 : 0;
-
-  const logoGroup = new Konva.Group({
-    y: qrSize + 16,
-  });
-  logoGroup.add(text);
-  logoGroup.add(documensoImage);
-
+  const logoGroup = new Konva.Group({ y: 16 });
+  logoGroup.add(label);
   branding.add(logoGroup);
-
-  if (qrToken) {
-    const qrSvg = renderSVG(`${NEXT_PUBLIC_WEBAPP_URL()}/share/${qrToken}`, {
-      ecc: 'Q',
-    });
-
-    const svgImage = await svgToPng(qrSvg);
-
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const qrSkiaImage = new SkiaImage(svgImage) as unknown as HTMLImageElement;
-    const qrImage = new Konva.Image({
-      image: qrSkiaImage,
-      height: qrSize,
-      width: qrSize,
-      x: branding.getClientRect().width - qrSize,
-      y: 0,
-    });
-
-    branding.add(qrImage);
-  }
 
   return branding;
 };
@@ -753,7 +710,7 @@ export async function renderCertificate({
 
   const tables = renderTables({ groupedRows, columnWidths, i18n });
 
-  const brandingGroup = await renderBranding({ qrToken, i18n });
+  const brandingGroup = renderBranding({ qrToken, i18n });
   const brandingRect = brandingGroup.getClientRect();
   const brandingTopPadding = 24;
 

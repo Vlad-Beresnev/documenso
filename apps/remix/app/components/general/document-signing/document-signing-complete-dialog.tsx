@@ -371,7 +371,7 @@ export const DocumentSigningCompleteDialog = ({
                   <DialogFooter className="mt-4">
                     <Button
                       type="button"
-                      variant="secondary"
+                      variant="outline"
                       onClick={() => setShowDialog(false)}
                       disabled={form.formState.isSubmitting}
                     >
