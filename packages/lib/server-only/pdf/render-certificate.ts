@@ -6,6 +6,7 @@ import type { RecipientRole } from '@prisma/client';
 import Konva from 'konva';
 import 'konva/skia-backend';
 import { DateTime } from 'luxon';
+import fs from 'node:fs';
 import path from 'node:path';
 import type { Canvas } from 'skia-canvas';
 import { Image as SkiaImage } from 'skia-canvas';
@@ -18,6 +19,7 @@ import {
 } from '../../constants/recipient-roles';
 import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-logs';
 import { ensureFontLibrary } from './helpers';
+import { svgToPng } from '../../utils/images/svg-to-png';
 
 type ColumnWidths = [number, number, number];
 
@@ -561,24 +563,46 @@ const renderRow = (options: RenderRowOptions) => {
   return rowGroup;
 };
 
-const renderBranding = ({ i18n }: { qrToken: string | null; i18n: I18n }) => {
+const renderBranding = async ({ i18n }: { qrToken: string | null; i18n: I18n }) => {
   const branding = new Konva.Group();
 
-  const brandingHeight = 12;
+  const logoDisplayHeight = 36;
+  const logoAspectRatio = 216 / 195; // glc-logo.svg native dimensions
+  const logoDisplayWidth = Math.round(logoDisplayHeight * logoAspectRatio);
+
+  // Load GLC SVG logo, convert to PNG, and render as image
+  const logoPath = path.join(process.cwd(), '../../packages/email/static/glc-logo.svg');
+  const svgString = fs.readFileSync(logoPath, 'utf-8');
+  const logoPngBuffer = await svgToPng(svgString);
+  const logoDataUri = `data:image/png;base64,${logoPngBuffer.toString('base64')}`;
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const logoImg = new SkiaImage(logoDataUri) as unknown as HTMLImageElement;
+
+  const logoNode = new Konva.Image({
+    image: logoImg,
+    x: 0,
+    y: 0,
+    width: logoDisplayWidth,
+    height: logoDisplayHeight,
+  });
+
+  branding.add(logoNode);
+
+  const gap = 10;
+  const textY = (logoDisplayHeight - textSm) / 2;
 
   const label = new Konva.Text({
-    x: 0,
+    x: logoDisplayWidth + gap,
+    y: textY,
     verticalAlign: 'middle',
-    text: i18n._(msg`Signing certificate provided by`) + ': Global Legal Check',
+    text: i18n._(msg`Signing certificate provided by`) + ': GlobalLegalCheck',
     fontStyle: fontMedium,
     fontFamily: 'Inter',
     fontSize: textSm,
-    height: brandingHeight,
   });
 
-  const logoGroup = new Konva.Group({ y: 16 });
-  logoGroup.add(label);
-  branding.add(logoGroup);
+  branding.add(label);
 
   return branding;
 };
@@ -710,7 +734,7 @@ export async function renderCertificate({
 
   const tables = renderTables({ groupedRows, columnWidths, i18n });
 
-  const brandingGroup = renderBranding({ qrToken, i18n });
+  const brandingGroup = await renderBranding({ qrToken, i18n });
   const brandingRect = brandingGroup.getClientRect();
   const brandingTopPadding = 24;
 

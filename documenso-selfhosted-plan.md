@@ -65,7 +65,7 @@ export const BrandingLogo = ({ ...props }: LogoProps) => (
 
 // Option B: image file
 export const BrandingLogo = ({ className }: { className?: string }) => (
-  <img src="/glc-logo.svg" alt="GLC" className={className} />
+  <img src="/glc-logo.png" alt="GLC" className={className} />
 )
 ```
 
@@ -114,7 +114,7 @@ openssl genrsa -out documenso.key 4096
 
 # Step 2: Create self-signed certificate (valid 10 years)
 openssl req -new -x509 -key documenso.key -out documenso.crt -days 3650 \
-  -subj "/CN=GLC Signing/O=Global Legal Check/C=FI"
+  -subj "/CN=GLC Signing/O=GlobalLegalCheck/C=FI"
 
 # Step 3: Bundle into .p12 with a password
 openssl pkcs12 -export \
@@ -361,11 +361,11 @@ cd documenso-glc
 ```tsx
 // Replace the existing <svg> export with your own logo
 export const BrandingLogo = ({ className }: { className?: string }) => (
-  <img src="/glc-logo.svg" alt="GLC" className={className} />
+  <img src="/glc-logo.png" alt="GLC" className={className} />
 )
 ```
 
-Copy your `glc-logo.svg` into `apps/remix/public/`.
+Copy your `glc-logo.png` into `apps/remix/public/`.
 
 Also update the icon file `apps/remix/app/components/general/branding-logo-icon.tsx` if needed.
 
@@ -399,7 +399,7 @@ openssl genrsa -out documenso.key 4096
 
 # Self-signed certificate valid 10 years
 openssl req -new -x509 -key documenso.key -out documenso.crt -days 3650 \
-  -subj "/CN=GLC Signing/O=Global Legal Check/C=FI"
+  -subj "/CN=GLC Signing/O=GlobalLegalCheck/C=FI"
 
 # Bundle into .p12
 openssl pkcs12 -export \
@@ -641,3 +641,203 @@ Run through the full flow once before going to production:
 ```
 
 All 9 points passing = production-ready.
+
+---
+
+---
+
+## White-Label Change Map
+
+Every file that was modified for GLC branding, what it does, and how to change it again.
+
+---
+
+### 1. Brand colours
+
+**`packages/ui/styles/theme.css`**
+
+Controls every colour in the UI (buttons, rings, focus states). Tailwind requires HSL channel format — not hex.
+
+```css
+/* Find these two variables and update both :root and .dark blocks */
+--primary: 212 100% 49%;          /* GLC blue #007CFA */
+--primary-foreground: 0 0% 100%;  /* white text on blue */
+--ring: 212 100% 49%;             /* focus ring colour */
+```
+
+To change the brand colour: convert your hex to HSL channels (e.g. `#007CFA` → `212 100% 49%`) and replace all three values.
+
+---
+
+### 2. Signature field border colour
+
+**`packages/ui/lib/recipient-colors.ts`**
+
+The `green` entry is the default colour for the first recipient's signature fields on the signing canvas.
+
+```ts
+green: {
+  baseRing: 'rgba(0, 124, 250, 1)',       // solid border
+  baseRingHover: 'rgba(0, 124, 250, 0.3)', // hover fill
+  baseTextHover: 'rgba(0, 124, 250, 1)',
+  fieldButton: 'hover:border-recipient-blue hover:bg-recipient-blue/30',
+  fieldItemInitials: 'group-hover/field-item:bg-recipient-blue',
+  // comboxBoxTrigger and comboxBoxItem use recipient-blue too
+},
+```
+
+Replace `rgba(0, 124, 250, ...)` with your colour. The Tailwind class `recipient-blue` is defined in `packages/tailwind-config/index.cjs` — update it there if you change the colour.
+
+---
+
+### 3. Main app logo (navbar + profile page)
+
+**`apps/remix/app/components/general/branding-logo.tsx`**
+**`apps/remix/app/components/general/branding-logo-icon.tsx`**
+
+`BrandingLogo` is the full-size logo shown in the top navbar.
+`BrandingLogoIcon` is the compact square icon used in mobile nav and profile pages.
+
+Both components currently point to static files:
+
+```tsx
+// branding-logo.tsx
+export const BrandingLogo = ({ className, ...props }) => (
+  <img src="/glc-logo.png" alt="Global Legal Check" className={className} />
+);
+
+// branding-logo-icon.tsx
+export const BrandingLogoIcon = ({ className, ...props }) => (
+  <img src="/glc-logo-icon.svg" alt="GLC" className={className} />
+);
+```
+
+Place your logo files at:
+- `apps/remix/public/glc-logo.png` — full horizontal logo
+- `apps/remix/public/glc-logo-icon.svg` — square icon
+- `apps/remix/public/glc-logo.svg` — icon used in PDF header/footer and email
+
+Logo height in the header is set in:
+- **`apps/remix/app/components/general/app-header.tsx`** — `className="h-12 w-auto"` on the `<BrandingLogo>` element (line ~66)
+
+---
+
+### 4. Cancel button style on signing dialog
+
+**`apps/remix/app/components/general/document-signing/document-signing-complete-dialog.tsx`**
+
+The "Are you sure?" confirmation dialog has a Cancel button. Changed from `secondary` to `outline` to match GLC design.
+
+```tsx
+// Line ~370
+<Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+  Cancel
+</Button>
+```
+
+---
+
+### 5. Certificate PDF — Konva canvas renderer
+
+**`packages/lib/server-only/pdf/render-certificate.ts`**
+
+This is the actual PDF certificate generator (not the HTML route). It uses Konva + Skia canvas to draw everything programmatically.
+
+Changes made:
+- Signature field border colour changed from Documenso green to GLC blue:
+  ```ts
+  // Search for rgba(122, 196, 85 — replace with GLC blue
+  rgba(0, 124, 250, 0.6)  // border
+  rgba(0, 124, 250, 0.1)  // fill
+  ```
+- Removed QR code rendering and Documenso logo from `renderBranding()`
+- Replaced with plain text: `"Signing certificate provided by: Global Legal Check"`
+
+To change the certificate footer text, find `renderBranding` (~line 560) and edit the `text:` string.
+
+---
+
+### 6. Certificate page — HTML route
+
+**`apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx`**
+
+The HTML version of the certificate (rendered by `htmltopdf` for print). Updated with GLC styling:
+- Dark navy heading with blue accent bar
+- Blue table headers
+- Blue signature glow
+- Footer text: "Signing certificate provided by: Global Legal Check"
+- Removed QR code block
+
+To update the footer text, search for `Signing certificate provided by` in this file (~line 385).
+
+---
+
+### 7. Signed document header & footer (PDF stamp)
+
+**`packages/lib/server-only/pdf/add-signed-header-footer.ts`** *(new file)*
+
+Stamps a GLC-branded header and footer onto every original page of a sealed document.
+
+**Header** (top of each page):
+- Left: GLC icon + "GlobalLegalCheck — `<document title>`"
+- Right: "Electronically signed | Sig ID: `<id>`"
+- Bottom edge: thin blue border line
+
+**Footer** (bottom of each page):
+- Top edge: thin blue border line
+- Left: GLC icon + "Doc ID: `<id>`"
+- Center: "This document is legally signed"
+- Right: "Signed: `<timestamp>` | Page X of N"
+
+Key constants at the top of the file:
+```ts
+const HEADER_HEIGHT = 22;    // pts — increase if text is clipped
+const FOOTER_HEIGHT = 20;    // pts
+const LOGO_HEIGHT = 12;      // pts — icon height
+const FONT_SIZE = 7;         // pts
+const PADDING = 8;           // pts from page edges
+const BORDER_THICKNESS = 0.75;
+```
+
+The logo is loaded from `apps/remix/public/glc-logo.svg`.
+The font is loaded from `apps/remix/public/fonts/noto-sans.ttf`.
+
+This function is called from **`packages/lib/jobs/definitions/internal/seal-document.handler.ts`** inside `decorateAndSignPdf()`, after all signature fields are inserted and before the final flatten.
+
+---
+
+### 8. Email templates — logo
+
+All email templates are in **`packages/email/templates/`** (23 files).
+
+Every template now renders the GLC icon directly — no branding DB override:
+```tsx
+<Img
+  src={getAssetUrl('/static/glc-logo.svg')}
+  alt="GlobalLegalCheck"
+  height={48}
+  width={53}
+  className="mb-4"
+/>
+```
+
+The icon file is at **`apps/remix/public/static/glc-logo.svg`**.
+
+To update the icon: replace that SVG file. To change the display size: update `height` and `width` (keep the 216:195 aspect ratio → `width = height * 216 / 195`).
+
+Email footer text ("© GlobalLegalCheck. All rights reserved.") is in:
+**`packages/email/template-components/template-footer.tsx`**
+
+---
+
+### 9. Static assets reference table
+
+| File | Used in | Notes |
+|------|---------|-------|
+| `apps/remix/public/glc-logo.svg` | PDF header/footer stamp | 216×195 viewBox |
+| `apps/remix/public/glc-logo.png` | App navbar (`BrandingLogo`) | Full horizontal logo |
+| `apps/remix/public/glc-logo-icon.svg` | Mobile nav, profile page | Square icon |
+| `apps/remix/public/static/glc-logo.svg` | All email templates | Copy of main SVG |
+| `apps/remix/public/static/logo.png` | Fallback (legacy) | Can be replaced with GLC PNG |
+| `apps/remix/public/favicon.ico` | Browser tab | Replace with GLC icon |
+| `apps/remix/public/site.webmanifest` | PWA name | Update `"name"` and `"short_name"` |

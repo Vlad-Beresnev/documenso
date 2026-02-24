@@ -3,7 +3,6 @@ import { DateTime } from 'luxon';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { NEXT_PRIVATE_INTERNAL_WEBAPP_URL } from '../../constants/app';
 import { svgToPng } from '../../utils/images/svg-to-png';
 
 // GLC brand colours
@@ -13,7 +12,8 @@ const MUTED_GRAY = rgb(100 / 255, 116 / 255, 139 / 255);
 
 const HEADER_HEIGHT = 22; // pts
 const FOOTER_HEIGHT = 20; // pts
-const LOGO_HEIGHT = 12; // pts (square logo)
+const LOGO_HEIGHT = 12; // pts
+const LOGO_WIDTH = Math.round((12 * 216) / 195); // pts — preserves 216:195 aspect ratio
 const FONT_SIZE = 7; // pts
 const PADDING = 8; // pts from edges
 const BORDER_THICKNESS = 0.75; // pts
@@ -55,12 +55,10 @@ export async function addSignedHeaderFooter({
   signedAt,
   signatureId,
 }: AddSignedHeaderFooterOptions): Promise<void> {
-  // Load font
-  const fontBytes = await fetch(`${NEXT_PRIVATE_INTERNAL_WEBAPP_URL()}/fonts/noto-sans.ttf`).then(
-    async (res) => res.arrayBuffer(),
-  );
-
-  const font = pdf.embedFont(new Uint8Array(fontBytes));
+  // Load font from disk (same pattern as render-certificate.ts / render-audit-logs.ts)
+  const fontPath = path.join(process.cwd(), 'public/fonts/noto-sans.ttf');
+  const fontBytes = fs.readFileSync(fontPath);
+  const font = pdf.embedFont(fontBytes);
 
   // Convert GLC SVG logo → PNG and embed into the PDF once
   const svgPath = path.join(process.cwd(), 'public/glc-logo.svg');
@@ -104,7 +102,7 @@ export async function addSignedHeaderFooter({
       x: PADDING,
       y: logoY,
       height: LOGO_HEIGHT,
-      width: LOGO_HEIGHT, // square viewBox
+      width: LOGO_WIDTH,
     });
 
     // "GlobalLegalCheck — <title>" next to the logo
@@ -117,7 +115,7 @@ export async function addSignedHeaderFooter({
     const leftHeaderText = `GlobalLegalCheck  \u2014  ${truncatedTitle}`;
 
     page.drawText(leftHeaderText, {
-      x: PADDING + LOGO_HEIGHT + 4,
+      x: PADDING + LOGO_WIDTH + 4,
       y: headerTextY,
       size: FONT_SIZE,
       font,
@@ -154,16 +152,18 @@ export async function addSignedHeaderFooter({
     const footerLogoHeight = LOGO_HEIGHT - 2;
     const footerLogoY = (FOOTER_HEIGHT - footerLogoHeight) / 2;
 
+    const footerLogoWidth = Math.round((footerLogoHeight * 216) / 195);
+
     page.drawImage(logoImage, {
       x: PADDING,
       y: footerLogoY,
       height: footerLogoHeight,
-      width: footerLogoHeight, // square viewBox
+      width: footerLogoWidth,
     });
 
     // Left: "Doc ID: <id>"
     page.drawText(`Doc ID: ${documentId}`, {
-      x: PADDING + footerLogoHeight + 4,
+      x: PADDING + footerLogoWidth + 4,
       y: footerTextY,
       size: FONT_SIZE,
       font,

@@ -37,15 +37,13 @@ export const OrganisationJoinEmailTemplate = ({
       <Body className="mx-auto my-auto font-sans">
         <Section className="bg-white text-slate-500">
           <Container className="mx-auto mb-2 mt-8 max-w-xl rounded-lg border border-solid border-slate-200 p-2 backdrop-blur-sm">
-            {branding.brandingEnabled && branding.brandingLogo ? (
-              <Img src={branding.brandingLogo} alt="Branding Logo" className="mb-4 h-6 p-2" />
-            ) : (
-              <TemplateImage
-                assetBaseUrl={assetBaseUrl}
-                className="mb-4 h-6 p-2"
-                staticAsset="logo.png"
-              />
-            )}
+            <Img
+              src={new URL('/static/glc-logo.svg', assetBaseUrl).toString()}
+              alt="GlobalLegalCheck"
+              height={48}
+              width={53}
+              className="mb-4"
+            />
 
             <Section>
               <TemplateImage
