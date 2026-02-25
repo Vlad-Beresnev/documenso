@@ -6,12 +6,22 @@ import { OrganisationType } from '@prisma/client';
 
 import { RECIPIENT_ROLES_DESCRIPTION } from '@documenso/lib/constants/recipient-roles';
 
-import { Body, Container, Head, Hr, Html, Img, Link, Preview, Section, Text } from '../components';
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Section,
+  Text,
+} from '../components';
 import { useBranding } from '../providers/branding';
 import { TemplateCustomMessageBody } from '../template-components/template-custom-message-body';
 import type { TemplateDocumentInviteProps } from '../template-components/template-document-invite';
-import { TemplateDocumentInvite } from '../template-components/template-document-invite';
-import { TemplateFooter } from '../template-components/template-footer';
 
 export type DocumentInviteEmailTemplateProps = Partial<TemplateDocumentInviteProps> & {
   customBody?: string;
@@ -53,102 +63,236 @@ export const DocumentInviteEmailTemplate = ({
     previewText = msg`Please ${action} your document ${documentName}`;
   }
 
-  const getAssetUrl = (path: string) => {
-    return new URL(path, assetBaseUrl).toString();
-  };
+  const formattedExpiry = expiresAt
+    ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(
+        expiresAt,
+      )
+    : null;
 
   return (
     <Html>
       <Head />
       <Preview>{_(previewText)}</Preview>
 
-      <Body className="mx-auto my-auto bg-white font-sans">
+      <Body style={{ backgroundColor: '#f1f5f9', fontFamily: 'sans-serif', margin: 0, padding: 0 }}>
         <Section>
-          <Container className="mx-auto mb-2 mt-8 max-w-xl rounded-lg border border-solid border-slate-200 p-4 backdrop-blur-sm">
-            <Section>
-              <Img
-                src={getAssetUrl('/static/glc-logo.svg')}
-                alt="GlobalLegalCheck"
-                height={48}
-                width={53}
-                className="mb-4"
-              />
-
-              <TemplateDocumentInvite
-                inviterName={inviterName}
-                inviterEmail={inviterEmail}
-                documentName={documentName}
-                signDocumentLink={signDocumentLink}
-                assetBaseUrl={assetBaseUrl}
-                role={role}
-                selfSigner={selfSigner}
-                organisationType={organisationType}
-                teamName={teamName}
-                includeSenderDetails={includeSenderDetails}
-              />
-            </Section>
+          {/* Top badge */}
+          <Container
+            style={{
+              maxWidth: '560px',
+              margin: '0 auto',
+              paddingTop: '24px',
+              paddingBottom: '12px',
+              textAlign: 'left',
+            }}
+          >
+            <Text style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+              🔒 This link is unique and secure
+            </Text>
           </Container>
 
-          <Container className="mx-auto mt-8 max-w-xl">
-            <Section>
-              {customBody ? (
-                <Text className="mt-2 text-base text-slate-400">
-                  <TemplateCustomMessageBody text={customBody} />
+          {/* Main card */}
+          <Container
+            style={{
+              maxWidth: '560px',
+              margin: '0 auto',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0',
+              padding: '32px',
+            }}
+          >
+            <Section style={{ width: 'auto', marginBottom: '24px' }}>
+              {/* Logo — top center */}
+              <Section style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <Img
+                  src={new URL('/static/glc-logo.svg', assetBaseUrl).toString()}
+                  alt="GlobalLegalCheck"
+                  height={48}
+                  width={53}
+                  style={{ margin: '0 auto' }}
+                />
+                <Text className="m-0 text-sm font-black tracking-[-0.01em] text-slate-900">
+                  GlobalLegalCheck
                 </Text>
-              ) : (
-                <>
-                  <Text className="m-0 text-sm text-slate-600">
-                    <Trans>
-                      <strong>Sent by:</strong> {inviterName}
-                    </Trans>
-                  </Text>
+                <Text className="m-0 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  Review the contracts
+                </Text>
+              </Section>
+            </Section>
 
-                  {organisationType === OrganisationType.ORGANISATION && teamName && (
-                    <Text className="m-0 text-sm text-slate-600">
-                      <Trans>
-                        <strong>Organization:</strong> {teamName}
-                      </Trans>
-                    </Text>
-                  )}
+            <Text
+              style={{ margin: '0 0 8px 0', fontSize: '22px', fontWeight: 700, color: '#1a2b4a' }}
+            >
+              <Trans>Review and Sign Document</Trans>
+            </Text>
 
-                  <Text className="m-0 text-sm text-slate-600">
-                    <Trans>
-                      <strong>Email:</strong>{' '}
-                      <Link className="text-slate-600" href={`mailto:${inviterEmail}`}>
-                        {inviterEmail}
-                      </Link>
-                    </Trans>
-                  </Text>
+            <Text style={{ margin: '0 0 24px 0', fontSize: '14px', color: '#64748b' }}>
+              <Trans>
+                You have been requested to review and electronically sign the document below.
+              </Trans>
+            </Text>
 
-                  {expiresAt && (
-                    <Text className="mb-0 mt-4 text-sm font-medium text-slate-600">
-                      <Trans>
-                        This signing request expires on{' '}
-                        {new Intl.DateTimeFormat('en-GB', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        }).format(expiresAt)}
-                        .
-                      </Trans>
-                    </Text>
-                  )}
-
-                  <Text className="mb-0 mt-4 text-sm text-slate-400">
-                    <Trans>
-                      If you were not expecting this document, please contact the sender before
-                      proceeding.
-                    </Trans>
-                  </Text>
-                </>
+            {/* Document info box */}
+            <Section
+              style={{
+                backgroundColor: '#f1f5f9',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '24px',
+              }}
+            >
+              <Text style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#334155' }}>
+                <strong>
+                  <Trans>Document:</Trans>
+                </strong>{' '}
+                {documentName}
+              </Text>
+              {formattedExpiry && (
+                <Text style={{ margin: 0, fontSize: '14px', color: '#334155' }}>
+                  <strong>
+                    <Trans>Expires:</Trans>
+                  </strong>{' '}
+                  {formattedExpiry}
+                </Text>
               )}
             </Section>
+
+            {customBody && (
+              <Text style={{ margin: '0 0 24px 0', fontSize: '14px', color: '#475569' }}>
+                <TemplateCustomMessageBody text={customBody} />
+              </Text>
+            )}
+
+            {/* CTA button */}
+            <Section style={{ marginBottom: '24px', textAlign: 'center' }}>
+              <Button
+                href={signDocumentLink}
+                style={{
+                  backgroundColor: '#007CFA',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '15px',
+                  borderRadius: '8px',
+                  padding: '14px 48px',
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                }}
+              >
+                <Trans>Review and Sign Document</Trans>
+              </Button>
+            </Section>
+
+            <Hr style={{ borderColor: '#e2e8f0', margin: '24px 0' }} />
+
+            {/* Security section */}
+            <Section>
+              <Text
+                style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: 700, color: '#1a2b4a' }}
+              >
+                🛡 <Trans>Secure Electronic Signature</Trans>
+              </Text>
+              <Text style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748b' }}>
+                <Trans>
+                  Your electronic signature is legally binding and will create a finalized
+                  agreement.
+                </Trans>
+              </Text>
+              <Text style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#475569' }}>
+                <span style={{ color: '#007CFA', marginRight: '8px' }}>✓</span>
+                <Trans>Encrypted in transit and at rest</Trans>
+              </Text>
+              <Text style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#475569' }}>
+                <span style={{ color: '#007CFA', marginRight: '8px' }}>✓</span>
+                <Trans>Full audit trail and timestamp</Trans>
+              </Text>
+              <Text style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#475569' }}>
+                <span style={{ color: '#007CFA', marginRight: '8px' }}>✓</span>
+                <Trans>Compliant with applicable electronic signature regulations</Trans>
+              </Text>
+              <Text style={{ margin: 0, fontSize: '13px', color: '#475569' }}>
+                <span style={{ color: '#007CFA', marginRight: '8px' }}>✓</span>
+                <Trans>Signed copy automatically delivered to all parties</Trans>
+              </Text>
+            </Section>
           </Container>
 
-          <Hr className="mx-auto mt-12 max-w-xl" />
+          {/* Sender info */}
+          <Container style={{ maxWidth: '560px', margin: '24px auto 0', padding: '0 16px' }}>
+            <Text
+              style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 700, color: '#1a2b4a' }}
+            >
+              <Trans>Sent by</Trans>
+            </Text>
+            <Text style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#334155' }}>
+              <Trans>Name:</Trans>{' '}
+              <Link
+                href={`mailto:${inviterEmail}`}
+                style={{ color: '#007CFA', textDecoration: 'none' }}
+              >
+                {inviterName}
+              </Link>
+            </Text>
+            {organisationType === OrganisationType.ORGANISATION && teamName && (
+              <Text style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#334155' }}>
+                <Trans>Organization:</Trans> <span style={{ color: '#007CFA' }}>{teamName}</span>
+              </Text>
+            )}
+            <Text style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#334155' }}>
+              <Trans>Email:</Trans>{' '}
+              <Link
+                href={`mailto:${inviterEmail}`}
+                style={{ color: '#007CFA', textDecoration: 'none' }}
+              >
+                {inviterEmail}
+              </Link>
+            </Text>
+            <Text style={{ margin: '0 0 32px 0', fontSize: '13px', color: '#94a3b8' }}>
+              <Trans>
+                If you were not expecting this request, contact the sender before proceeding.
+              </Trans>
+            </Text>
 
-          <Container className="mx-auto max-w-xl text-center">
-            <TemplateFooter />
+            {/* What happens next */}
+            <Text
+              style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 700, color: '#1a2b4a' }}
+            >
+              <Trans>What happens next</Trans>
+            </Text>
+            <Text style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#475569' }}>
+              <Trans>Review the full document.</Trans>
+            </Text>
+            <Text style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#475569' }}>
+              <Trans>Confirm your identity if required.</Trans>
+            </Text>
+            <Text style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#475569' }}>
+              <Trans>Apply your electronic signature.</Trans>
+            </Text>
+            <Text style={{ margin: '0 0 0 0', fontSize: '14px', color: '#475569' }}>
+              <Trans>Receive a signed copy automatically.</Trans>
+            </Text>
+          </Container>
+
+          <Hr style={{ maxWidth: '560px', margin: '32px auto', borderColor: '#e2e8f0' }} />
+
+          {/* Footer */}
+          <Container style={{ maxWidth: '560px', margin: '0 auto 32px', textAlign: 'center' }}>
+            <Text style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#94a3b8' }}>
+              © 2025 Global Legal Check
+            </Text>
+            <Text style={{ margin: 0, fontSize: '12px' }}>
+              <Link href="#" style={{ color: '#007CFA', textDecoration: 'none' }}>
+                <Trans>Privacy Policy</Trans>
+              </Link>
+              {' | '}
+              <Link href="#" style={{ color: '#007CFA', textDecoration: 'none' }}>
+                <Trans>Security Information</Trans>
+              </Link>
+              {' | '}
+              <Link href="#" style={{ color: '#007CFA', textDecoration: 'none' }}>
+                <Trans>Support</Trans>
+              </Link>
+            </Text>
           </Container>
         </Section>
       </Body>
