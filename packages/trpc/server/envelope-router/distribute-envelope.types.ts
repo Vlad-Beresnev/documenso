@@ -18,6 +18,15 @@ export const distributeEnvelopeMeta: TrpcRouteMeta = {
 
 export const ZDistributeEnvelopeRequestSchema = z.object({
   envelopeId: z.string().describe('The ID of the envelope to send.'),
+  senderName: z
+    .string()
+    .optional()
+    .describe('Override the display name shown in the "Sent by" section of the signing email.'),
+  senderEmail: z
+    .string()
+    .email()
+    .optional()
+    .describe('Override the display email shown in the "Sent by" section of the signing email.'),
   meta: ZDocumentMetaUpdateSchema.pick({
     subject: true,
     message: true,

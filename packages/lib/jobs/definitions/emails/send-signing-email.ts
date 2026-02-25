@@ -10,6 +10,8 @@ const SEND_SIGNING_EMAIL_JOB_DEFINITION_SCHEMA = z.object({
   documentId: z.number(),
   recipientId: z.number(),
   requestMetadata: ZRequestMetadataSchema.optional(),
+  senderName: z.string().optional(),
+  senderEmail: z.string().email().optional(),
 });
 
 export type TSendSigningEmailJobDefinition = z.infer<

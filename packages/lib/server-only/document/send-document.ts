@@ -54,6 +54,8 @@ export type SendDocumentOptions = {
   teamId: number;
   sendEmail?: boolean;
   requestMetadata: ApiRequestMetadata;
+  senderName?: string;
+  senderEmail?: string;
 };
 
 export const sendDocument = async ({
@@ -62,6 +64,8 @@ export const sendDocument = async ({
   teamId,
   sendEmail,
   requestMetadata,
+  senderName,
+  senderEmail,
 }: SendDocumentOptions) => {
   const { envelopeWhereInput } = await getEnvelopeWhereInput({
     id,
@@ -318,6 +322,8 @@ export const sendDocument = async ({
             documentId: legacyDocumentId,
             recipientId: recipient.id,
             requestMetadata: requestMetadata?.requestMetadata,
+            senderName,
+            senderEmail,
           },
         });
       }),

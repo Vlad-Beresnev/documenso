@@ -39,7 +39,7 @@ export const run = async ({
   payload: TSendSigningEmailJobDefinition;
   io: JobRunIO;
 }) => {
-  const { userId, documentId, recipientId, requestMetadata } = payload;
+  const { userId, documentId, recipientId, requestMetadata, senderName, senderEmail } = payload;
 
   const [user, envelope, recipient] = await Promise.all([
     prisma.user.findFirstOrThrow({
@@ -94,15 +94,21 @@ export const run = async ({
     return;
   }
 
-  const { branding, emailLanguage, settings, organisationType, senderEmail, replyToEmail } =
-    await getEmailContext({
-      emailType: 'RECIPIENT',
-      source: {
-        type: 'team',
-        teamId: envelope.teamId,
-      },
-      meta: envelope.documentMeta,
-    });
+  const {
+    branding,
+    emailLanguage,
+    settings,
+    organisationType,
+    senderEmail: smtpSender,
+    replyToEmail,
+  } = await getEmailContext({
+    emailType: 'RECIPIENT',
+    source: {
+      type: 'team',
+      teamId: envelope.teamId,
+    },
+    meta: envelope.documentMeta,
+  });
 
   const customEmail = envelope?.documentMeta;
   const isDirectTemplate = envelope.source === DocumentSource.TEMPLATE_DIRECT_LINK;
@@ -153,11 +159,12 @@ export const run = async ({
 
   const template = createElement(DocumentInviteEmailTemplate, {
     documentName: envelope.title,
-    inviterName: user.name || undefined,
+    inviterName: senderName || user.name || undefined,
     inviterEmail:
-      organisationType === OrganisationType.ORGANISATION
+      senderEmail ||
+      (organisationType === OrganisationType.ORGANISATION
         ? team?.teamEmail?.email || user.email
-        : user.email,
+        : user.email),
     assetBaseUrl,
     signDocumentLink,
     customBody: renderCustomEmailTemplate(emailMessage, customEmailTemplate),
@@ -186,7 +193,7 @@ export const run = async ({
           name: recipient.name,
           address: recipient.email,
         },
-        from: senderEmail,
+        from: smtpSender,
         replyTo: replyToEmail,
         subject: renderCustomEmailTemplate(
           documentMeta?.subject || emailSubject,
