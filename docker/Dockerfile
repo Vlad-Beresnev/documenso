@@ -72,6 +72,8 @@ COPY --from=builder /app/out/package-lock.json ./package-lock.json
 COPY --from=builder /app/lingui.config.ts ./lingui.config.ts
 COPY --from=builder /app/patches ./patches
 
+COPY .env.example .env
+
 RUN npm ci
 
 # Then copy all the source code (as it changes more often)

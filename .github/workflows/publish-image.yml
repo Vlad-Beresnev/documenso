@@ -8,6 +8,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: global-legal-check/esign-documenso
+  BUILDKIT_PROGRESS: plain
+  DOCKER_BUILD_SUMMARY: false
 
 jobs:
   build-and-push:
