@@ -78,12 +78,10 @@ RUN npm ci
 
 # Then copy all the source code (as it changes more often)
 COPY --from=builder /app/out/full/ .
-# Finally copy the turbo.json file so that we can run turbo commands
+# Keep turbo.json available for monorepo tooling expectations.
 COPY turbo.json turbo.json
 
-RUN npm install -g "turbo@^1.9.3"
-
-RUN turbo run build --filter=@documenso/remix...
+RUN npm run build -w @documenso/remix
 
 ###########################
 #     RUNNER CONTAINER    #

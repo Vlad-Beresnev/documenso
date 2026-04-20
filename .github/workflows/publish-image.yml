@@ -10,6 +10,7 @@ env:
   IMAGE_NAME: global-legal-check/esign-documenso
   BUILDKIT_PROGRESS: plain
   DOCKER_BUILD_SUMMARY: false
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-push:
