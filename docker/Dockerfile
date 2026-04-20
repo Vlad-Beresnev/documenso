@@ -81,7 +81,7 @@ COPY --from=builder /app/out/full/ .
 # Keep turbo.json available for monorepo tooling expectations.
 COPY turbo.json turbo.json
 
-RUN npm run build -w @documenso/remix
+RUN cd apps/remix && bash -euxo pipefail ./.bin/build.sh
 
 ###########################
 #     RUNNER CONTAINER    #
