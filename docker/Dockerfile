@@ -116,6 +116,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/patches ./patches
 
 RUN npm ci --only=production
 
+RUN npm ci --omit=dev --include=optional
+RUN npm install --no-save @node-rs/bcrypt-linux-x64-musl@1.10.7
+
 # Automatically leverage output traces to reduce image size
 # https://nodejs.org/docs/advanced-features/output-file-tracing
 COPY --from=installer --chown=nodejs:nodejs /app/apps/remix/build ./apps/remix/build
