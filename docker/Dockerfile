@@ -81,7 +81,7 @@ COPY --from=builder /app/out/full/ .
 # Keep turbo.json available for monorepo tooling expectations.
 COPY turbo.json turbo.json
 
-RUN npx prisma generate --schema ./packages/prisma/schema.prisma
+RUN cd packages/prisma && npx prisma generate
 
 RUN cd apps/remix && bash -euxo pipefail ./.bin/build.sh
 
@@ -126,7 +126,7 @@ COPY --from=installer --chown=nodejs:nodejs /app/packages/prisma/schema.prisma .
 COPY --from=installer --chown=nodejs:nodejs /app/packages/prisma/migrations ./packages/prisma/migrations
 
 # Generate the prisma client again
-RUN npx prisma generate --schema ./packages/prisma/schema.prisma
+RUN cd packages/prisma && npx prisma generate
 
 
 # Get the start script from docker/
