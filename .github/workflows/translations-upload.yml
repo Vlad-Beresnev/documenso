@@ -67,11 +67,13 @@ jobs:
 
           if [ -z "$EXISTING_PR" ]; then
             echo "No existing PR — creating new one."
-            gh pr create \
-              --title "chore: extract translations" \
-              --body "Automated translation extraction" \
-              --base main \
-              --head "$BRANCH"
+            if ! gh pr create \
+                --title "chore: extract translations" \
+                --body "Automated translation extraction" \
+                --base main \
+                --head "$BRANCH"; then
+              echo "::warning::Could not create translation PR. Enable GitHub Actions PR creation in repository settings, or open a PR from $BRANCH manually."
+            fi
           else
             echo "PR #$EXISTING_PR already exists — not creating a new one."
           fi

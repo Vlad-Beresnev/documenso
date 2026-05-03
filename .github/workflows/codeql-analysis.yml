@@ -31,7 +31,7 @@ jobs:
       - uses: ./.github/actions/node-install
 
       - name: Build app
-        run: npm run build
+        run: npm run build -- --filter=@documenso/remix...
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
