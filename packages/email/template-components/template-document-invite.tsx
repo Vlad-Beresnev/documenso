@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/react/macro';
+import type { OrganisationType } from '@prisma/client';
 import { RecipientRole } from '@prisma/client';
 import { match } from 'ts-pattern';
 

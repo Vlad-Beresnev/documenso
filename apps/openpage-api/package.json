@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@documenso/prisma": "*",
-    "hono": "4.12.2",
+        "hono": "4.12.14",
     "luxon": "^3.7.2",
     "next": "^15.5.12"
   },
