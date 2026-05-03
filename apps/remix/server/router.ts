@@ -33,6 +33,7 @@ import { openApiTrpcServerHandler } from './trpc/hono-trpc-open-api';
 import { reactRouterTrpcServer } from './trpc/hono-trpc-remix';
 
 export interface HonoEnv {
+  Bindings: object;
   Variables: RequestIdVariables & {
     context: AppContext;
     logger: Logger;
