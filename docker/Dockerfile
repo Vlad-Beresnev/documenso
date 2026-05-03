@@ -81,6 +81,8 @@ COPY --from=builder /app/out/full/ .
 # Keep turbo.json available for monorepo tooling expectations.
 COPY turbo.json turbo.json
 
+RUN npx prisma generate --schema ./packages/prisma/schema.prisma
+
 RUN cd apps/remix && bash -euxo pipefail ./.bin/build.sh
 
 ###########################
